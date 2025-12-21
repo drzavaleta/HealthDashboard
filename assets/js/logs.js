@@ -118,7 +118,10 @@ const LogsPage = (() => {
 
     const dateSet = new Set();
     state.rows.forEach(r => r.date && dateSet.add(r.date));
-    const dateColumns = Array.from(dateSet).sort((a, b) => new Date(b) - new Date(a));
+    // Sort descending and take only the past 7 days
+    const dateColumns = Array.from(dateSet)
+      .sort((a, b) => new Date(b) - new Date(a))
+      .slice(0, 7);
 
     const devices = Object.keys(deviceMap);
     devices.forEach((device) => {

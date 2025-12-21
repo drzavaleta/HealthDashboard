@@ -282,9 +282,8 @@ p {
 }
 
 table {
-  width: 100%;
+  width: fit-content;
   border-collapse: collapse;
-  min-width: 640px;
   table-layout: fixed;
 }
 
@@ -745,6 +744,7 @@ tbody tr:hover {
 
 #medications-table, #supplements-table, #discontinued-table, #providers-table {
   table-layout: fixed;
+  width: 100%;
 }
 
 /* Sync Name column width with Labs page for consistency */
