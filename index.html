@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Health Dashboard</title>
+  <link rel="stylesheet" href="assets/css/theme.css" />
+</head>
+<body>
+  <header class="topbar hidden" id="main-header">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <div>
+        <div class="brand-title">Health Dashboard</div>
+        <div class="brand-subtitle">Personal Health Record</div>
+      </div>
+    </div>
+    <nav class="nav" id="main-nav">
+      <div class="nav-links">
+        <a class="nav-link" href="#labs">Laboratory</a>
+        <a class="nav-link" href="#meds">Medications</a>
+        <a class="nav-link" href="#logs">Daily Logs</a>
+        <a class="nav-link" href="#providers">Providers</a>
+        <span class="nav-link disabled" aria-disabled="true">Exercise</span>
+        <span class="nav-link disabled" aria-disabled="true">Documents</span>
+      </div>
+      
+      <div id="profile-dropdown" class="profile-dropdown hidden">
+        <button class="profile-icon" id="profile-btn" aria-label="Profile Menu">
+          <span id="user-initials">U</span>
+        </button>
+        <div class="dropdown-menu" id="dropdown-menu">
+          <div class="dropdown-header">
+            <span id="user-email" class="muted-small">user@example.com</span>
+          </div>
+          <hr>
+          <button class="dropdown-item" onclick="Auth.signOut()">Logout</button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="page">
+    <!-- Auth Section -->
+    <section id="auth-section" class="content-section card">
+      <div class="auth-container">
+        <div class="brand-mark main-logo" aria-hidden="true"></div>
+        <h1 id="auth-title">Health Dashboard</h1>
+        <p id="auth-msg" class="muted">Your personal health journey, secured.</p>
+        
+        <form id="auth-form" class="auth-form">
+          <div class="control">
+            <label>Email</label>
+            <input type="email" id="auth-email" required placeholder="your@email.com">
+          </div>
+          <div class="control">
+            <label>Password</label>
+            <input type="password" id="auth-password" required placeholder="Min. 6 characters">
+          </div>
+          <div class="control hidden" id="confirm-password-group">
+            <label>Confirm Password</label>
+            <input type="password" id="auth-confirm-password" placeholder="••••••••">
+          </div>
+          <div id="auth-error" class="error hidden" style="margin-top: 15px;"></div>
+          <div class="auth-buttons">
+            <button type="submit" id="auth-submit-btn" class="btn btn-add">Login</button>
+          </div>
+          <div class="auth-toggle">
+            <p id="toggle-text" class="muted-small">Don't have an account? <a href="#" id="btn-toggle-auth">Sign Up</a></p>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <div id="dashboard-content" class="hidden">
+      <section id="labs" class="content-section card">
+      <header class="card-header">
+        <div>
+          <h1>Laboratory Results</h1>
+        </div>
+        <div class="controls">
+          <label class="control">
+            <span>Panel</span>
+            <select id="panel-filter">
+              <option value="all">All panels</option>
+            </select>
+          </label>
+          <label class="control">
+            <span>Flag</span>
+            <select id="flag-filter">
+              <option value="all">All</option>
+              <option value="high">High only</option>
+              <option value="low">Low only</option>
+              <option value="normal">Normal only</option>
+            </select>
+          </label>
+        </div>
+      </header>
+      <div id="labs-content">
+        <div class="loading">Loading lab results…</div>
+      </div>
+    </section>
+
+    <section id="meds" class="content-section card hidden">
+      <header class="card-header">
+        <div>
+          <h1>Medications & Supplements</h1>
+        </div>
+      </header>
+      <div id="meds-content">
+        <!-- Medications table -->
+        <div class="panel-block">
+          <div class="table-wrapper">
+            <table class="lab-table" id="medications-table">
+              <thead>
+                <tr class="panel-header-row">
+                  <th colspan="5" class="th-panel">Medications</th>
+                </tr>
+                <tr>
+                  <th>Name</th>
+                  <th>Dose</th>
+                  <th>Frequency</th>
+                  <th>Start Date</th>
+                  <th style="width: 100px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+              <tfoot>
+                <tr class="add-row">
+                  <td><input type="text" placeholder="Add name..." id="new-med-name"></td>
+                  <td><input type="text" placeholder="Dose..." id="new-med-dose"></td>
+                  <td><input type="text" placeholder="Freq..." id="new-med-freq"></td>
+                  <td><input type="date" id="new-med-date"></td>
+                  <td><button class="btn btn-add" onclick="MedsPage.addItem('medications')">Add</button></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Supplements table -->
+        <div class="panel-block">
+          <div class="table-wrapper">
+            <table class="lab-table" id="supplements-table">
+              <thead>
+                <tr class="panel-header-row">
+                  <th colspan="5" class="th-panel">Supplements</th>
+                </tr>
+                <tr>
+                  <th>Name</th>
+                  <th>Dose</th>
+                  <th>Frequency</th>
+                  <th>Start Date</th>
+                  <th style="width: 100px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+              <tfoot>
+                <tr class="add-row">
+                  <td>
+                    <input type="text" placeholder="Add name..." id="new-supp-name">
+                    <input type="url" placeholder="Paste reorder URL here..." id="new-supp-url" class="url-input">
+                  </td>
+                  <td><input type="text" placeholder="Dose..." id="new-supp-dose"></td>
+                  <td><input type="text" placeholder="Freq..." id="new-supp-freq"></td>
+                  <td><input type="date" id="new-supp-date"></td>
+                  <td><button class="btn btn-add" onclick="MedsPage.addItem('supplements')">Add</button></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Discontinued table -->
+        <div class="panel-block">
+          <div class="table-wrapper">
+            <table class="lab-table" id="discontinued-table">
+              <thead>
+                <tr class="panel-header-row">
+                  <th colspan="5" class="th-panel">Discontinued</th>
+                </tr>
+                <tr>
+                  <th>Name</th>
+                  <th>Dose</th>
+                  <th>Frequency</th>
+                  <th>Notes</th>
+                  <th style="width: 100px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+              <tfoot>
+                <tr class="add-row">
+                  <td><input type="text" placeholder="Add name..." id="new-disco-name"></td>
+                  <td><input type="text" placeholder="Dose..." id="new-disco-dose"></td>
+                  <td><input type="text" placeholder="Freq..." id="new-disco-freq"></td>
+                  <td><input type="text" placeholder="Notes..." id="new-disco-notes"></td>
+                  <td><button class="btn btn-add" onclick="MedsPage.addItem('discontinued')">Add</button></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <div class="data-controls">
+        <button class="btn btn-muted" onclick="MedsPage.resetData()">Reset to CSV Defaults</button>
+        <p class="muted-small">Use this if your tables are not syncing with the latest data files.</p>
+      </div>
+    </section>
+
+    <section id="logs" class="content-section card hidden">
+      <header class="card-header">
+        <div>
+          <h1>Daily Logs</h1>
+        </div>
+      </header>
+      <div id="logs-content">
+        <div class="loading">Loading logs…</div>
+      </div>
+    </section>
+
+    <section id="providers" class="content-section card hidden">
+      <header class="card-header">
+        <div>
+          <h1>Healthcare Providers</h1>
+        </div>
+      </header>
+      <div id="providers-content">
+        <div class="panel-block">
+          <div class="table-wrapper">
+            <table class="lab-table" id="providers-table">
+              <thead>
+                <tr class="panel-header-row">
+                  <th colspan="7" class="th-panel">Providers</th>
+                </tr>
+                <tr>
+                  <th>Name</th>
+                  <th>Specialty</th>
+                  <th>Office</th>
+                  <th>Cell</th>
+                  <th>Email</th>
+                  <th>Notes</th>
+                  <th style="width: 100px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+              <tfoot>
+                <tr class="add-row">
+                  <td>
+                    <input type="text" placeholder="First..." id="new-prov-first">
+                    <input type="text" placeholder="Last..." id="new-prov-last">
+                    <input type="text" placeholder="Suffix..." id="new-prov-suffix">
+                    <input type="url" placeholder="Website URL..." id="new-prov-url" class="url-input">
+                  </td>
+                  <td><input type="text" placeholder="Specialty..." id="new-prov-specialty"></td>
+                  <td><input type="text" placeholder="Office..." id="new-prov-office"></td>
+                  <td><input type="text" placeholder="Cell..." id="new-prov-cell"></td>
+                  <td><input type="email" placeholder="Email..." id="new-prov-email"></td>
+                  <td><input type="text" placeholder="Notes..." id="new-prov-notes"></td>
+                  <td><button class="btn btn-add" onclick="ProvidersPage.addItem()">Add</button></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <div class="data-controls">
+        <button class="btn btn-muted" onclick="ProvidersPage.resetData()">Reset to CSV Defaults</button>
+        <p class="muted-small">Use this if your tables are not syncing with the latest data files.</p>
+      </div>
+    </section>
+    </div> <!-- Close dashboard-content -->
+  </main>
+
+  <script src="assets/js/labs.js"></script>
+  <script src="assets/js/meds.js"></script>
+  <script src="assets/js/logs.js"></script>
+  <script src="assets/js/providers.js"></script>
+  <!-- Supabase Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-config.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
+

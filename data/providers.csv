@@ -1,0 +1,4 @@
+first_name,last_name,suffix,specialty,url,office,cell,email,notes
+John,Smith,MD,PCP,https://www.example-clinic.com,555-0101,555-0102,dr.smith@example.com,Annual physicals and general health
+Jane,Lee,MD,Cardiology,https://www.heart-center.com,555-0201,,lee.heart@example.com,Managing blood pressure
+Sarah,Johnson,PT,Physical Therapy,,555-0301,555-0302,sarah.pt@example.com,Back recovery exercises

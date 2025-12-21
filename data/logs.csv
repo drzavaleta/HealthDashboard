@@ -1,0 +1,43 @@
+device,test,result,date
+Apple Watch,Apple Steps,10245,2025-12-21
+Apple Watch,Apple Steps,8920,2025-12-20
+Apple Watch,Apple Steps,11500,2025-12-19
+Apple Watch,Apple Exercise (min),45,2025-12-21
+Apple Watch,Apple Exercise (min),32,2025-12-20
+Apple Watch,Apple Exercise (min),60,2025-12-19
+Apple Watch,Apple VO2max (ml/kg/min),42.5,2025-12-21
+Apple Watch,Apple VO2max (ml/kg/min),42.4,2025-12-20
+Apple Watch,Apple VO2max (ml/kg/min),42.5,2025-12-19
+Apple Watch,Apple Active Cal,650,2025-12-21
+Apple Watch,Apple Active Cal,480,2025-12-20
+Apple Watch,Apple Active Cal,820,2025-12-19
+Apple Watch,Apple Resting HR,58,2025-12-21
+Apple Watch,Apple Resting HR,60,2025-12-20
+Apple Watch,Apple Resting HR,59,2025-12-19
+Whoop,Whoop Recovery (%),82,2025-12-21
+Whoop,Whoop Recovery (%),45,2025-12-20
+Whoop,Whoop Recovery (%),91,2025-12-19
+Whoop,Whoop Strain,14.2,2025-12-21
+Whoop,Whoop Strain,11.5,2025-12-20
+Whoop,Whoop Strain,16.8,2025-12-19
+Whoop,Whoop HRV (ms),65,2025-12-21
+Whoop,Whoop HRV (ms),58,2025-12-20
+Whoop,Whoop HRV (ms),72,2025-12-19
+Whoop,Whoop RHR,52,2025-12-21
+Whoop,Whoop RHR,54,2025-12-20
+Whoop,Whoop RHR,51,2025-12-19
+Whoop,Whoop Sleep (hrs),7.5,2025-12-21
+Whoop,Whoop Sleep (hrs),6.2,2025-12-20
+Whoop,Whoop Sleep (hrs),8.1,2025-12-19
+Eight Sleep,Eight Sleep (hrs),7.2,2025-12-21
+Eight Sleep,Eight Sleep (hrs),6.5,2025-12-20
+Eight Sleep,Eight Sleep (hrs),7.8,2025-12-19
+Eight Sleep,Eight Sleep Score,88,2025-12-21
+Eight Sleep,Eight Sleep Score,72,2025-12-20
+Eight Sleep,Eight Sleep Score,94,2025-12-19
+Eight Sleep,Eight Sleep HR,54,2025-12-21
+Eight Sleep,Eight Sleep HR,56,2025-12-20
+Eight Sleep,Eight Sleep HR,53,2025-12-19
+Eight Sleep,Eight Sleep HRV (ms),68,2025-12-21
+Eight Sleep,Eight Sleep HRV (ms),62,2025-12-20
+Eight Sleep,Eight Sleep HRV (ms),75,2025-12-19
