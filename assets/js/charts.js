@@ -5,22 +5,23 @@
 const ChartsPage = (() => {
   let state = {
     metrics: [],
-    timeframe: 30, // Default to 30 days
-    charts: {},    // Store chart instances
+    timeframe: 30,
+    charts: {},
   };
 
   const colors = {
     whoop: { border: '#ff3b30', bg: 'rgba(255, 59, 48, 0.1)' },
     eightSleep: { border: '#007aff', bg: 'rgba(0, 122, 255, 0.1)' },
     appleWatch: { border: '#34c759', bg: 'rgba(52, 199, 89, 0.1)' },
+    other: { border: '#8e8e93', bg: 'rgba(142, 142, 147, 0.1)' }
   };
 
   const getSourceColor = (source) => {
     const s = source.toLowerCase();
     if (s.includes('whoop')) return colors.whoop;
     if (s.includes('eight')) return colors.eightSleep;
-    if (s.includes('apple')) return colors.appleWatch;
-    return { border: '#8e8e93', bg: 'rgba(142, 142, 147, 0.1)' };
+    if (s.includes('watch') || s.includes('apple')) return colors.appleWatch;
+    return colors.other;
   };
 
   const loadData = async () => {
@@ -50,21 +51,26 @@ const ChartsPage = (() => {
     return data.filter(d => new Date(d.recorded_at) >= cutoff);
   };
 
-  const groupDataByDateAndSource = (data, metricTypes) => {
-    const filtered = data.filter(d => metricTypes.includes(d.metric_type));
-    const byDate = {}; // { 'YYYY-MM-DD': { 'Source': value } }
+  const groupDataByDateAndSource = (data, metricTypeKeywords) => {
+    // We search for ANY of the keywords in the metric_type (e.g. 'rhr' or 'resting')
+    const filtered = data.filter(d => 
+      metricTypeKeywords.some(key => d.metric_type.toLowerCase().includes(key.toLowerCase()))
+    );
+    
+    const byDate = {}; 
 
     filtered.forEach(d => {
       const date = new Date(d.recorded_at).toISOString().split('T')[0];
       if (!byDate[date]) byDate[date] = {};
       
-      // Simplify source name
-      let source = 'Other';
-      if (d.source.toLowerCase().includes('whoop')) source = 'Whoop';
-      else if (d.source.toLowerCase().includes('eight')) source = 'Eight Sleep';
-      else if (d.source.toLowerCase().includes('watch')) source = 'Apple Watch';
+      let sourceLabel = 'Other';
+      const s = d.source.toLowerCase();
+      if (s.includes('whoop')) sourceLabel = 'Whoop';
+      else if (s.includes('eight')) sourceLabel = 'Eight Sleep';
+      else if (s.includes('watch') || s.includes('apple')) sourceLabel = 'Apple Watch';
 
-      byDate[date][source] = d.value;
+      // If we have multiple readings for the same day/source, take the average or the last one
+      byDate[date][sourceLabel] = d.value;
     });
 
     return byDate;
@@ -74,7 +80,6 @@ const ChartsPage = (() => {
     const ctx = document.getElementById(id);
     if (!ctx) return;
 
-    // Destroy existing chart to prevent ghosting
     if (state.charts[id]) state.charts[id].destroy();
 
     const dates = Object.keys(dataMap).sort();
@@ -85,7 +90,7 @@ const ChartsPage = (() => {
       const color = getSourceColor(source);
       return {
         label: source,
-        data: dates.map(d => dataMap[d][source] || null),
+        data: dates.map(d => dataMap[d][source] ?? null),
         borderColor: color.border,
         backgroundColor: color.bg,
         tension: 0.3,
@@ -116,20 +121,20 @@ const ChartsPage = (() => {
   const renderAllCharts = () => {
     const filtered = filterByTimeframe(state.metrics);
 
-    // 1. Resting Heart Rate
+    // 1. Resting Heart Rate (Whoop calls it 'resting_heart_rate')
     const rhrData = groupDataByDateAndSource(filtered, ['resting_heart_rate', 'rhr']);
     createChart('chart-rhr', 'Resting Heart Rate', rhrData);
 
-    // 2. HRV
+    // 2. HRV (Whoop calls it 'heart_rate_variability')
     const hrvData = groupDataByDateAndSource(filtered, ['heart_rate_variability', 'hrv']);
     createChart('chart-hrv', 'HRV', hrvData);
 
-    // 3. Steps
+    // 3. Steps (Apple Watch is 'step_count')
     const stepData = groupDataByDateAndSource(filtered, ['step_count', 'steps']);
     createChart('chart-steps', 'Steps', stepData, 'bar');
 
-    // 4. Sleep (Simplified duration)
-    const sleepData = groupDataByDateAndSource(filtered, ['sleep_analysis', 'total_sleep']);
+    // 4. Sleep (Auto Export uses 'sleep_analysis')
+    const sleepData = groupDataByDateAndSource(filtered, ['sleep_analysis', 'sleep_duration']);
     createChart('chart-sleep', 'Sleep', sleepData);
   };
 
@@ -139,4 +144,3 @@ const ChartsPage = (() => {
 
   return { init, updateTimeframe };
 })();
-
