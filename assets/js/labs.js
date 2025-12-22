@@ -69,7 +69,7 @@ const LabsPage = (() => {
               <th class="th-date">
                 <div class="date-header-content">
                   <div class="date-spacer"></div>
-                  <span class="date-text">${d}</span>
+                  <span class="date-text">${window.formatDateForDisplay(d)}</span>
                   <div class="date-spacer"></div>
                 </div>
               </th>

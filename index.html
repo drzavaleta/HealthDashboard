@@ -91,8 +91,8 @@
             <label class="control">
               <span>Timeframe</span>
               <select id="chart-timeframe" onchange="ChartsPage.updateTimeframe(this.value)">
-                <option value="7">Last 7 Days</option>
-                <option value="30" selected>Last 30 Days</option>
+                <option value="7" selected>Last 7 Days</option>
+                <option value="30">Last 30 Days</option>
                 <option value="90">Last 90 Days</option>
                 <option value="all">All Time</option>
               </select>
@@ -116,6 +116,10 @@
           <div class="chart-container">
             <h3>Sleep Duration (hrs)</h3>
             <canvas id="chart-sleep"></canvas>
+          </div>
+          <div class="chart-container">
+            <h3>Respiratory Rate (br/min)</h3>
+            <canvas id="chart-resp"></canvas>
           </div>
         </div>
       </section>
@@ -179,9 +183,9 @@
                   <td><input type="text" placeholder="Freq..." id="new-med-freq"></td>
                   <td>
                     <div class="date-input-wrapper">
-                      <input type="text" placeholder="YYYY-MM-DD" id="new-med-date">
+                      <input type="text" placeholder="MM-DD-YYYY" id="new-med-date">
                       <button type="button" class="date-picker-trigger" onclick="this.nextElementSibling.showPicker()">📅</button>
-                      <input type="date" class="hidden-date-picker" onchange="this.previousElementSibling.previousElementSibling.value = this.value">
+                      <input type="date" class="hidden-date-picker" onchange="this.previousElementSibling.previousElementSibling.value = window.formatDateForDisplay(this.value)">
                     </div>
                   </td>
                   <td><button class="btn btn-add" onclick="MedsPage.addItem('medications')">Add</button></td>
@@ -218,9 +222,9 @@
                   <td><input type="text" placeholder="Freq..." id="new-supp-freq"></td>
                   <td>
                     <div class="date-input-wrapper">
-                      <input type="text" placeholder="YYYY-MM-DD" id="new-supp-date">
+                      <input type="text" placeholder="MM-DD-YYYY" id="new-supp-date">
                       <button type="button" class="date-picker-trigger" onclick="this.nextElementSibling.showPicker()">📅</button>
-                      <input type="date" class="hidden-date-picker" onchange="this.previousElementSibling.previousElementSibling.value = this.value">
+                      <input type="date" class="hidden-date-picker" onchange="this.previousElementSibling.previousElementSibling.value = window.formatDateForDisplay(this.value)">
                     </div>
                   </td>
                   <td><button class="btn btn-add" onclick="MedsPage.addItem('supplements')">Add</button></td>

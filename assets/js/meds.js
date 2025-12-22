@@ -39,9 +39,9 @@ const MedsPage = (() => {
     const editingIndex = state.editing[key];
     const dateInputHtml = (id, value) => `
       <div class="date-input-wrapper">
-        <input type="text" value="${value || ""}" id="${id}" placeholder="YYYY-MM-DD" class="date-text-input">
+        <input type="text" value="${window.formatDateForDisplay(value)}" id="${id}" placeholder="MM-DD-YYYY" class="date-text-input">
         <button type="button" class="date-picker-trigger" onclick="this.nextElementSibling.showPicker()">📅</button>
-        <input type="date" class="hidden-date-picker" onchange="this.previousElementSibling.previousElementSibling.value = this.value">
+        <input type="date" class="hidden-date-picker" onchange="this.previousElementSibling.previousElementSibling.value = window.formatDateForDisplay(this.value)">
       </div>
     `;
 
@@ -83,7 +83,7 @@ const MedsPage = (() => {
           }
         }
 
-        const fourthColValue = key === "discontinued" ? (item.notes || "-") : (item.start_date || "-");
+        const fourthColValue = key === "discontinued" ? (item.notes || "-") : (window.formatDateForDisplay(item.start_date));
 
         tr.innerHTML = `
           <td>${displayName}</td>
@@ -116,7 +116,7 @@ const MedsPage = (() => {
     if (key === "discontinued") {
       newItem.notes = document.getElementById(`${prefix}-notes`).value;
     } else {
-      newItem.start_date = document.getElementById(`${prefix}-date`).value || null;
+      newItem.start_date = window.formatDateForDb(document.getElementById(`${prefix}-date`).value) || null;
     }
     
     if (key === "supplements") {
@@ -187,7 +187,7 @@ const MedsPage = (() => {
     if (key === "discontinued") {
       updates.notes = document.getElementById(`edit-${key}-notes`).value;
     } else {
-      updates.start_date = document.getElementById(`edit-${key}-date`).value || null;
+      updates.start_date = window.formatDateForDb(document.getElementById(`edit-${key}-date`).value) || null;
     }
     
     if (key === "supplements") {

@@ -48,6 +48,7 @@ const LogsPage = (() => {
     const deviceMap = groupByDeviceAndTest(state.rows);
     const tests = Object.keys(deviceMap[device] || {});
     
+    const dbDate = window.formatDateForDb(date);
     const updates = [];
     tests.forEach(test => {
       const input = document.getElementById(`edit-val-${device}-${test}-${date}`);
@@ -60,7 +61,7 @@ const LogsPage = (() => {
           updates.push(window.db.from('daily_logs').update({ result: val }).eq('id', existing.id));
         } else if (val !== "") {
           // Create new
-          updates.push(window.db.from('daily_logs').insert([{ device, test, result: val, date }]));
+          updates.push(window.db.from('daily_logs').insert([{ device, test, result: val, date: dbDate }]));
         }
       }
     });
@@ -77,7 +78,7 @@ const LogsPage = (() => {
 
   const saveAddColumn = async (device) => {
     const dateInput = document.getElementById(`new-col-date-${device}`);
-    const date = dateInput.value;
+    const date = window.formatDateForDb(dateInput.value);
     if (!date) {
       alert("Please select a date.");
       return;
@@ -138,9 +139,9 @@ const LogsPage = (() => {
       
       const dateInputHtml = (id, value) => `
         <div class="date-input-wrapper">
-          <input type="text" value="${value || ""}" id="${id}" placeholder="YYYY-MM-DD" class="date-picker-header">
+          <input type="text" value="${window.formatDateForDisplay(value)}" id="${id}" placeholder="MM-DD-YYYY" class="date-picker-header">
           <button type="button" class="date-picker-trigger" onclick="this.nextElementSibling.showPicker()">📅</button>
-          <input type="date" class="hidden-date-picker" onchange="this.previousElementSibling.previousElementSibling.value = this.value">
+          <input type="date" class="hidden-date-picker" onchange="this.previousElementSibling.previousElementSibling.value = window.formatDateForDisplay(this.value)">
         </div>
       `;
 
@@ -170,7 +171,7 @@ const LogsPage = (() => {
                 <th class="th-date">
                   <div class="date-header-content">
                     <div class="date-spacer"></div>
-                    <span class="date-text">${d}</span>
+                    <span class="date-text">${window.formatDateForDisplay(d)}</span>
                     <div class="date-actions ${isEditing ? 'is-editing' : ''}">
                       ${isEditing 
                         ? `<button class="btn-icon save-small" onclick="LogsPage.saveEditColumn('${device}', '${d}')">💾</button>

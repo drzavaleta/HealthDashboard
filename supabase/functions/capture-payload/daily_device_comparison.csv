@@ -1,0 +1,14 @@
+Date,Metric,Device,Value,Aggregation
+2025-12-21,heart_rate_variability,Jeffrey’s Apple Watch,20.3,Average
+2025-12-21,respiratory_rate,Eight Sleep,12.4,Average
+2025-12-21,respiratory_rate,WHOOP,14.82,Average
+2025-12-21,resting_heart_rate,Jeffrey’s Apple Watch,68.0,Average
+2025-12-21,resting_heart_rate,WHOOP,75.0,Average
+2025-12-21,step_count,Jeffrey’s Apple Watch,0.69,Total (Sum)
+2025-12-21,step_count,Jeffrey’s Apple Watch|DrZ iPhone 17 Pro,2653.23,Total (Sum)
+2025-12-22,heart_rate_variability,Jeffrey’s Apple Watch,20.54,Average
+2025-12-22,respiratory_rate,Eight Sleep,11.97,Average
+2025-12-22,respiratory_rate,WHOOP,14.16,Average
+2025-12-22,resting_heart_rate,Jeffrey’s Apple Watch,73.0,Average
+2025-12-22,resting_heart_rate,WHOOP,66.0,Average
+2025-12-22,step_count,Jeffrey’s Apple Watch|DrZ iPhone 17 Pro,2848.71,Total (Sum)
