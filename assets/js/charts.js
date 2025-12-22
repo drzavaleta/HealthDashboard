@@ -1,10 +1,11 @@
 /**
  * Charts Page Module
- * Visualizes health metrics from Supabase using Chart.js
+ * Visualizes health metrics and sleep logs from Supabase using Chart.js
  */
 const ChartsPage = (() => {
   let state = {
     metrics: [],
+    sleep: [],
     timeframe: 30,
     charts: {},
   };
@@ -16,23 +17,36 @@ const ChartsPage = (() => {
     other: { border: '#8e8e93', bg: 'rgba(142, 142, 147, 0.1)' }
   };
 
-  const getSourceColor = (source) => {
+  const normalizeSource = (source) => {
     const s = source.toLowerCase();
-    if (s.includes('whoop')) return colors.whoop;
-    if (s.includes('eight')) return colors.eightSleep;
-    if (s.includes('watch') || s.includes('apple')) return colors.appleWatch;
+    if (s.includes('eight')) return 'Eight Sleep';
+    if (s.includes('whoop')) return 'Whoop';
+    if (s.includes('watch') || s.includes('iphone')) return 'Apple Watch';
+    return 'Other';
+  };
+
+  const getSourceColor = (source) => {
+    const label = normalizeSource(source);
+    if (label === 'Whoop') return colors.whoop;
+    if (label === 'Eight Sleep') return colors.eightSleep;
+    if (label === 'Apple Watch') return colors.appleWatch;
     return colors.other;
   };
 
   const loadData = async () => {
     try {
-      const { data, error } = await window.db
-        .from('health_metrics')
-        .select('*')
-        .order('recorded_at', { ascending: true });
+      // Load both numeric metrics and sleep logs
+      const [metricsRes, sleepRes] = await Promise.all([
+        window.db.from('health_metrics').select('*').order('recorded_at', { ascending: true }),
+        window.db.from('sleep_logs').select('*').order('start_time', { ascending: true })
+      ]);
 
-      if (error) throw error;
-      state.metrics = data || [];
+      if (metricsRes.error) throw metricsRes.error;
+      if (sleepRes.error) throw sleepRes.error;
+
+      state.metrics = metricsRes.data || [];
+      state.sleep = sleepRes.data || [];
+      
       renderAllCharts();
     } catch (err) {
       console.error("Error loading charts data:", err);
@@ -44,42 +58,44 @@ const ChartsPage = (() => {
     renderAllCharts();
   };
 
-  const filterByTimeframe = (data) => {
+  const filterByTimeframe = (data, dateField) => {
     if (state.timeframe === 9999) return data;
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - state.timeframe);
-    return data.filter(d => new Date(d.recorded_at) >= cutoff);
+    return data.filter(d => new Date(d[dateField]) >= cutoff);
   };
 
   const groupDataByDateAndSource = (data, metricTypeKeywords) => {
-    // We search for ANY of the keywords in the metric_type (e.g. 'rhr' or 'resting')
     const filtered = data.filter(d => 
       metricTypeKeywords.some(key => d.metric_type.toLowerCase().includes(key.toLowerCase()))
     );
-    
     const byDate = {}; 
-
     filtered.forEach(d => {
       const date = new Date(d.recorded_at).toISOString().split('T')[0];
       if (!byDate[date]) byDate[date] = {};
-      
-      let sourceLabel = 'Other';
-      const s = d.source.toLowerCase();
-      if (s.includes('whoop')) sourceLabel = 'Whoop';
-      else if (s.includes('eight')) sourceLabel = 'Eight Sleep';
-      else if (s.includes('watch') || s.includes('apple')) sourceLabel = 'Apple Watch';
-
-      // If we have multiple readings for the same day/source, take the average or the last one
+      const sourceLabel = normalizeSource(d.source);
       byDate[date][sourceLabel] = d.value;
     });
+    return byDate;
+  };
 
+  const calculateSleepDuration = (sleepData) => {
+    const byDate = {};
+    sleepData.forEach(d => {
+      const date = new Date(d.start_time).toISOString().split('T')[0];
+      if (!byDate[date]) byDate[date] = {};
+      const sourceLabel = normalizeSource(d.source);
+      
+      // Calculate duration in hours
+      const duration = (new Date(d.end_time) - new Date(d.start_time)) / (1000 * 60 * 60);
+      byDate[date][sourceLabel] = (byDate[date][sourceLabel] || 0) + duration;
+    });
     return byDate;
   };
 
   const createChart = (id, title, dataMap, type = 'line') => {
     const ctx = document.getElementById(id);
     if (!ctx) return;
-
     if (state.charts[id]) state.charts[id].destroy();
 
     const dates = Object.keys(dataMap).sort();
@@ -119,23 +135,20 @@ const ChartsPage = (() => {
   };
 
   const renderAllCharts = () => {
-    const filtered = filterByTimeframe(state.metrics);
+    const filteredMetrics = filterByTimeframe(state.metrics, 'recorded_at');
+    const filteredSleep = filterByTimeframe(state.sleep, 'start_time');
 
-    // 1. Resting Heart Rate (Whoop calls it 'resting_heart_rate')
-    const rhrData = groupDataByDateAndSource(filtered, ['resting_heart_rate', 'rhr']);
-    createChart('chart-rhr', 'Resting Heart Rate', rhrData);
+    // 1. RHR
+    createChart('chart-rhr', 'Resting Heart Rate', groupDataByDateAndSource(filteredMetrics, ['resting_heart_rate', 'rhr']));
 
-    // 2. HRV (Whoop calls it 'heart_rate_variability')
-    const hrvData = groupDataByDateAndSource(filtered, ['heart_rate_variability', 'hrv']);
-    createChart('chart-hrv', 'HRV', hrvData);
+    // 2. HRV
+    createChart('chart-hrv', 'HRV', groupDataByDateAndSource(filteredMetrics, ['heart_rate_variability', 'hrv']));
 
-    // 3. Steps (Apple Watch is 'step_count')
-    const stepData = groupDataByDateAndSource(filtered, ['step_count', 'steps']);
-    createChart('chart-steps', 'Steps', stepData, 'bar');
+    // 3. Steps
+    createChart('chart-steps', 'Steps', groupDataByDateAndSource(filteredMetrics, ['step_count', 'steps']), 'bar');
 
-    // 4. Sleep (Auto Export uses 'sleep_analysis')
-    const sleepData = groupDataByDateAndSource(filtered, ['sleep_analysis', 'sleep_duration']);
-    createChart('chart-sleep', 'Sleep', sleepData);
+    // 4. Sleep (Calculated from sleep_logs)
+    createChart('chart-sleep', 'Sleep Duration', calculateSleepDuration(filteredSleep));
   };
 
   const init = () => {
