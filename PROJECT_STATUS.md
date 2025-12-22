@@ -40,16 +40,20 @@ A secure, responsive Single Page Application (SPA) for tracking personal health 
 ## ✨ Key Features & Design Decisions
 
 ### 1. Health Automation Pipeline
-- **iOS Integration:** Uses the **Health Auto Export** app on iPhone to "teleport" Apple Health data (Whoop, Eight Sleep, Apple Watch) directly to Supabase.
-- **Translator Engine:** A Supabase Edge Function (`health-sync`) acts as a middleman, cleaning and routing incoming JSON data to the correct tables.
-- **Source Normalization:** Automatically groups complex source names (e.g., "Jeffrey's Apple Watch") into clean categories ("Apple Watch", "Whoop", "Eight Sleep").
-- **Deduplication:** Database-level `UNIQUE` constraints and `upsert` logic prevent duplicate entries when syncing the same timeframe multiple times.
+- **iOS Integration:** Uses the **Health Auto Export** app on iPhone to "teleport" Apple Health data (Whoop, Eight Sleep, Apple Watch, Lingo) directly to Supabase.
+- **3-Tier Storage Engine:**
+  - **Tier 1 (Audit):** `raw_health_exports` table stores the full incoming JSON for 48 hours (auto-purged).
+  - **Tier 2 (Source of Truth):** `health_samples` table stores high-resolution individual data points with deduplication.
+  - **Tier 3 (Performance):** `health_metrics` View calculates daily sums/averages on-the-fly for charts.
+- **Source Normalization:** Automatically groups complex source names into clean categories ("Apple Watch", "Whoop", "Eight Sleep", "Lingo", "iPhone").
+- **Deduplication:** Database-level `UNIQUE` constraints prevent duplicate entries when syncing overlapping timeframes.
 
-### 2. Charts & Trends (New Home Screen)
-- **Primary View:** The Charts page is now the first tab, providing an immediate overview of health trends.
-- **Comparative Tracking:** Supports multi-source comparison (e.g., Whoop HRV vs. Eight Sleep HRV) on a single timeline.
+### 2. Charts & Trends (Home Screen)
+- **Primary View:** Immediate overview of health trends.
+- **Comparative Tracking:** Multi-source comparison (e.g., Whoop vs. Apple Watch) on a single timeline.
+- **High-Resolution Glucose:** A specialized chart shows intraday Blood Glucose fluctuations from Lingo over 48 hours.
 - **Dynamic Timeframes:** Users can toggle between 7, 30, 90 days, or "All Time" views.
-- **Mobile Optimized:** Charts are locked to a usable height (300px on mobile) to ensure readability on iPhone.
+- **Mobile Optimized:** Charts are locked to a usable height and scale responsively for iPhone.
 
 ### 3. Responsive Navigation
 - **Hamburger Menu:** Navigation links collapse into a hamburger icon on mobile.
