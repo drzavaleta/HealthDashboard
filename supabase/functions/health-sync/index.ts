@@ -2,10 +2,10 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 /**
- * HEALTH-SYNC EDGE FUNCTION (V2 - CLEAN START)
+ * HEALTH-SYNC EDGE FUNCTION (V4 - MEMORY OPTIMIZED)
  * 
- * This function takes raw sample data from Auto Health Exporter,
- * aggregates it into daily summaries, and syncs it to Supabase.
+ * Optimized to handle large payloads by processing metrics one-by-one 
+ * and using small database batches to stay under memory limits.
  */
 
 const OWNER_ID = "cac3a2da-0baa-491e-bf0d-01a2740b50eb";
@@ -14,7 +14,8 @@ const SOURCE_NORMALIZATION: Record<string, string> = {
   "Jeffrey’s Apple Watch": "Apple Watch",
   "Jeffrey's Apple Watch": "Apple Watch",
   "DrZ iPhone 17 Pro": "iPhone",
-  "DrZ iPhone": "iPhone"
+  "DrZ iPhone": "iPhone",
+  "Lingo": "Lingo"
 };
 
 const CORS_HEADERS = {
@@ -23,10 +24,7 @@ const CORS_HEADERS = {
 };
 
 serve(async (req) => {
-  // Handle CORS
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: CORS_HEADERS })
-  }
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS_HEADERS });
 
   try {
     const payload = await req.json();
@@ -37,119 +35,130 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Aggregation Object: agg[date][metric][source] = { sum, count, units }
-    const agg: any = {};
+    console.log(`Received payload with ${metrics.length} metrics. Starting processing...`);
+
+    // --- TIER 1: Save Raw Payload ---
+    const { error: rawError } = await supabase.from('raw_health_exports').insert([{ 
+      payload: payload,
+      user_id: OWNER_ID 
+    }]);
+    if (rawError) console.error("Tier 1 (Raw Save) Error:", rawError);
+
+    // --- TIER 2: Process Metrics One-by-One ---
+    let totalProcessed = 0;
 
     for (const metric of metrics) {
       const name = metric.name;
       const units = metric.units;
-      const samples = metric.data || [];
+      const data = metric.data || [];
+      
+      // Use a Map to deduplicate samples within this metric before batching
+      // Unique Key: recorded_at + source
+      const dedupedMap = new Map();
 
-      for (const sample of samples) {
-        // 1. Source Handling (Take first source if multiple)
+      for (const sample of data) {
+        // 1. Source Handling
         let source = sample.source || "Unknown";
-        if (source.includes('|')) {
-          source = source.split('|')[0].trim();
-        }
+        if (source.includes('|')) source = source.split('|')[0].trim();
 
-        // 2. Normalize Source Name (Replace non-breaking spaces with regular ones first)
-        source = source.replace(/\u00A0/g, ' ');
-        if (SOURCE_NORMALIZATION[source]) {
-          source = SOURCE_NORMALIZATION[source];
-        }
-
-        // 3. Extract Date (YYYY-MM-DD)
+        // 2. Normalize Source Name (Basic cleaning)
+        source = source.replace(/\u00A0/g, ' '); 
+        
+        // 3. Date Handling
         const rawDate = sample.date || sample.startDate || sample.recorded_at;
         if (!rawDate) continue;
-        const date = rawDate.split(' ')[0];
 
-        // 4. Get Value
-        const qty = parseFloat(sample.qty || sample.value || 0);
-        if (isNaN(qty)) continue;
+        // 4. Value Handling
+        const val = parseFloat(sample.qty ?? sample.Avg ?? sample.value ?? 0);
+        if (isNaN(val)) continue;
 
-        // 5. Aggregate
-        // For sleep, we prefix the metric name with the stage
-        const finalMetricName = name === 'sleep_analysis' 
+        // 5. Metric Name Cleanup
+        let finalMetricName = name === 'sleep_analysis' 
           ? `sleep_${(sample.value || 'asleep').toLowerCase().replace(/\s+/g, '_')}`
           : name;
 
-        if (!agg[date]) agg[date] = {};
-        if (!agg[date][finalMetricName]) agg[date][finalMetricName] = {};
-        if (!agg[date][finalMetricName][source]) {
-          agg[date][finalMetricName][source] = { sum: 0, count: 0, units: units };
+        // Advanced cleaning & normalization
+        const lowSource = source.toLowerCase();
+        let normalized = false;
+        if (lowSource.includes('eight')) { source = "Eight Sleep"; normalized = true; }
+        else if (lowSource.includes('whoop')) { source = "Whoop"; normalized = true; }
+        else if (lowSource.includes('watch') || lowSource.includes('health')) { source = "Apple Watch"; normalized = true; }
+        else if (lowSource.includes('iphone')) { source = "iPhone"; normalized = true; }
+        else if (lowSource.includes('lingo')) { source = "Lingo"; normalized = true; }
+        
+        if (!normalized && SOURCE_NORMALIZATION[source]) {
+          source = SOURCE_NORMALIZATION[source];
+          normalized = true;
         }
 
-        agg[date][finalMetricName][source].sum += qty;
-        agg[date][finalMetricName][source].count += 1;
-      }
-    }
-
-    // Prepare Records for Upsert
-    const upsertData = [];
-
-    for (const date in agg) {
-      for (const metricName in agg[date]) {
-        for (const source in agg[date][metricName]) {
-          const item = agg[date][metricName][source];
-          
-          // Determine Aggregation Type (Average vs Sum)
-          // Sum for steps, energy, distance, sleep hours
-          // Average for heart rate, HRV, respiratory rate, etc.
-          const sumMetrics = ['step', 'energy', 'distance', 'calories', 'sleep', 'active', 'flights'];
-          const isSum = sumMetrics.some(m => metricName.toLowerCase().includes(m));
-          
-          const finalValue = isSum ? item.sum : (item.sum / item.count);
-
-          upsertData.push({
-            user_id: OWNER_ID,
-            metric_type: metricName,
-            value: finalValue,
-            unit: item.units,
-            source: source,
-            recorded_at: `${date}T00:00:00+00:00` // Store at start of day for daily summary
-          });
+        if (!normalized) {
+          console.log(`[UNRECOGNIZED SOURCE] Metric: ${finalMetricName}, Source: ${source}`);
         }
+
+        // Special case: Eight Sleep heart rate counts as Resting Heart Rate
+        if (finalMetricName === 'heart_rate' && source === 'Eight Sleep') {
+          finalMetricName = 'resting_heart_rate';
+        }
+
+        // Special case: Ignore iPhone steps as they are unreliable
+        if (finalMetricName === 'step_count' && source === 'iPhone') {
+          continue;
+        }
+
+        const uniqueKey = `${rawDate}_${source}_${finalMetricName}`;
+        dedupedMap.set(uniqueKey, {
+          user_id: OWNER_ID,
+          metric_type: finalMetricName,
+          value: val,
+          unit: units,
+          source: source,
+          recorded_at: rawDate
+        });
       }
+
+      const allMetricSamples = Array.from(dedupedMap.values());
+      console.log(`Metric ${name}: ${allMetricSamples.length} unique samples found.`);
+
+      // 6. Batch Upsert
+      const BATCH_SIZE = 500;
+      for (let i = 0; i < allMetricSamples.length; i += BATCH_SIZE) {
+        const batch = allMetricSamples.slice(i, i + BATCH_SIZE);
+        const { error } = await supabase
+          .from('health_samples')
+          .upsert(batch, { onConflict: 'user_id, metric_type, source, recorded_at' });
+        
+        if (error) throw error;
+        totalProcessed += batch.length;
+      }
+      
+      console.log(`Finished metric: ${name}`);
     }
 
-    if (upsertData.length === 0) {
-      return new Response(JSON.stringify({ message: "No data to sync" }), {
-        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-        status: 200
-      });
-    }
+    // --- TIER 3: Cleanup ---
+    // Delete raw payloads older than 2 days to save storage space
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+    
+    const { error: cleanupError } = await supabase
+      .from('raw_health_exports')
+      .delete()
+      .lt('created_at', twoDaysAgo.toISOString());
 
-    // Sync to Database
-    const { error } = await supabase
-      .from('health_metrics')
-      .upsert(upsertData, { 
-        onConflict: 'user_id, metric_type, recorded_at, source' 
-      });
-
-    if (error) throw error;
-
-    console.log(`Successfully synced ${upsertData.length} daily summaries.`);
+    if (cleanupError) console.error("Storage Cleanup Error:", cleanupError);
 
     return new Response(
       JSON.stringify({ 
-        message: "Data aggregated and synced successfully", 
-        summaries_synced: upsertData.length 
+        message: "Memory-optimized sync successful.", 
+        samples_processed: totalProcessed 
       }),
-      { 
-        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }, 
-        status: 200 
-      }
+      { headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }, status: 200 }
     );
 
   } catch (error) {
     console.error("Sync Error:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { 
-        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }, 
-        status: 400 
-      }
+      { headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }, status: 400 }
     );
   }
 })
-
