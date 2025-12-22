@@ -89,6 +89,123 @@ a {
   flex-wrap: wrap;
 }
 
+/* Hamburger Menu */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 20;
+}
+
+.hamburger span {
+  width: 24px;
+  height: 2px;
+  background: var(--color-primary);
+  border-radius: 10px;
+  transition: all 0.3s linear;
+  position: relative;
+  transform-origin: 1px;
+}
+
+@media (max-width: 720px) {
+  :root {
+    --col-test: 180px;
+    --col-date: 110px;
+  }
+
+  .hamburger {
+    display: flex;
+    order: 1; /* Hamburger to the left of profile */
+  }
+
+  .profile-dropdown {
+    order: 2; /* Profile to the right of hamburger */
+  }
+
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--color-surface);
+    padding: 16px;
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 15;
+    order: 3;
+  }
+
+  .nav-links.show {
+    display: flex;
+  }
+
+  .nav-link {
+    width: 100%;
+    padding: 12px 16px;
+  }
+
+  .topbar {
+    padding: 10px 16px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px; /* Force a consistent height */
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .brand-mark {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+
+  .brand-title {
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1;
+  }
+
+  .brand-subtitle {
+    display: none;
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap; /* Prevent icons from wrapping */
+    align-items: center;
+    gap: 16px;
+    flex: 0 0 auto;
+  }
+
+  table {
+    min-width: 100%;
+  }
+
+  .controls {
+    width: 100%;
+  }
+}
+
 .profile-dropdown {
   position: relative;
   display: inline-block;
@@ -261,21 +378,39 @@ p {
   position: relative;
 }
 
+/* Sticky Name column for all tables */
 .lab-table th:first-child,
-.lab-table td:first-child {
+.lab-table td:first-child,
+.log-table th:first-child,
+.log-table td:first-child,
+#medications-table th:first-child, #medications-table td:first-child,
+#supplements-table th:first-child, #supplements-table td:first-child,
+#discontinued-table th:first-child, #discontinued-table td:first-child,
+#providers-table th:first-child, #providers-table td:first-child {
   position: sticky;
   left: 0;
   z-index: 2;
   background: var(--color-surface);
   border-right: 1px solid var(--color-border);
-  overflow: visible;
+  width: var(--col-test);
+  min-width: var(--col-test);
+  max-width: var(--col-test);
+  white-space: nowrap;
+  overflow: visible; /* Important for tooltips */
 }
 
-.lab-table td:first-child:hover,
-.lab-table td:first-child:focus-within {
-  z-index: 10; /* Lift the cell above the header when interacting */
+/* Specific styling for name text to handle ellipsis */
+.lab-table td:first-child .test-name,
+.log-table td:first-child,
+#medications-table td:first-child,
+#supplements-table td:first-child,
+#discontinued-table td:first-child,
+#providers-table td:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+/* Ensure header background stays correct when sticky */
 .panel-header-row th:first-child {
   z-index: 3;
   background: linear-gradient(135deg, #e6f2f4, #edf9fd) !important;
@@ -415,14 +550,6 @@ td {
   max-width: var(--col-date);
 }
 
-.lab-table td:first-child {
-  width: var(--col-test);
-  min-width: var(--col-test);
-  max-width: var(--col-test);
-  white-space: nowrap;
-  overflow: visible; /* Allow tooltips to show */
-}
-
 .test-cell-content {
   display: flex;
   align-items: center;
@@ -529,26 +656,6 @@ tbody tr:hover {
 .info:hover .tooltip,
 .info:focus .tooltip {
   display: block;
-}
-
-@media (max-width: 720px) {
-  :root {
-    --col-test: 180px;
-    --col-date: 110px;
-  }
-
-  .topbar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  table {
-    min-width: 100%;
-  }
-
-  .controls {
-    width: 100%;
-  }
 }
 
 .content-section.hidden {
@@ -742,23 +849,21 @@ tbody tr:hover {
   margin-top: 8px;
 }
 
-#medications-table, #supplements-table, #discontinued-table, #providers-table {
+#medications-table, #supplements-table, #discontinued-table {
   table-layout: fixed;
   width: 100%;
+  --col-test: 520px; /* Double the default 260px */
 }
 
-/* Sync Name column width with Labs page for consistency */
-#medications-table th:first-child, #medications-table td:first-child,
-#supplements-table th:first-child, #supplements-table td:first-child,
-#discontinued-table th:first-child, #discontinued-table td:first-child,
-#providers-table th:first-child, #providers-table td:first-child {
-  width: var(--col-test);
-  min-width: var(--col-test);
-  max-width: var(--col-test);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  position: relative;
+@media (max-width: 720px) {
+  #medications-table, #supplements-table, #discontinued-table {
+    --col-test: 360px; /* Double the default 180px */
+  }
+}
+
+#providers-table {
+  table-layout: fixed;
+  width: 100%;
 }
 
 /* Allow other columns to breathe and center them */

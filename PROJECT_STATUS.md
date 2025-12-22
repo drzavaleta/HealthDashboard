@@ -42,7 +42,12 @@ A secure, responsive Single Page Application (SPA) for tracking personal health 
 - The site is locked behind a **Login/Signup** screen.
 - The Dashboard header and content are hidden from the DOM until a valid Supabase session is detected.
 
-### 2. Laboratory Page
+### 2. Responsive Navigation
+- **Hamburger Menu:** On mobile (width < 720px), the navigation links collapse into a hamburger icon.
+- **Single-Line Header:** The Brand title, Profile icon, and Hamburger menu are aligned on a single row for optimized mobile screen usage.
+- **Profile Dropdown:** User initials and email are tucked into a right-justified profile menu.
+
+### 3. Laboratory Page
 - **Horizontal Date Columns:** Trends are viewed left-to-right (newest first).
 - **Auto-Alignment:** Dates are perfectly aligned across different panels.
 - **Smart Formatting:** Values are "capsuled" (Red for High, Yellow for Low).
@@ -50,6 +55,7 @@ A secure, responsive Single Page Application (SPA) for tracking personal health 
 - **Filters:** Ability to filter by Panel name or Flag status (High/Low/Normal).
 
 ### 3. Medications & Supplements
+- **Wide Sticky Columns:** Name column is 520px wide (double default) and sticky for better readability.
 - **Grokipedia Integration:** All item names are hyperlinks to `grokipedia.com` searches.
 - **Shopping Shortcuts:** Supplements include a 🛒 icon if a reorder URL is provided.
 - **Inline Editing:** Full CRUD (Create, Read, Update, Delete) directly in the table.
