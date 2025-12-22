@@ -667,6 +667,42 @@ tbody tr:hover {
   display: none !important;
 }
 
+/* Charts Layout */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.chart-container {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  min-height: 350px;
+}
+
+.chart-container h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: var(--color-secondary);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 8px;
+}
+
+@media (max-width: 720px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-container {
+    min-height: 300px;
+    padding: 12px;
+  }
+}
+
 /* Medications Page Styles */
 .actions {
   text-align: center;
@@ -839,6 +875,42 @@ tbody tr:hover {
 
 .hidden {
   display: none !important;
+}
+
+/* Charts Layout */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.chart-container {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  min-height: 350px;
+}
+
+.chart-container h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: var(--color-secondary);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 8px;
+}
+
+@media (max-width: 720px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-container {
+    min-height: 300px;
+    padding: 12px;
+  }
 }
 
 .muted-small {

@@ -23,6 +23,7 @@
       </button>
 
       <div class="nav-links" id="nav-links">
+        <a class="nav-link" href="#charts">Charts</a>
         <a class="nav-link" href="#labs">Laboratory</a>
         <a class="nav-link" href="#meds">Medications</a>
         <a class="nav-link" href="#logs">Daily Logs</a>
@@ -79,7 +80,47 @@
     </section>
 
     <div id="dashboard-content" class="hidden">
-      <section id="labs" class="content-section card">
+      <!-- Charts Section -->
+      <section id="charts" class="content-section card">
+        <header class="card-header">
+          <div>
+            <h1>Health Trends</h1>
+            <p class="muted">Visualizing your metrics across all devices.</p>
+          </div>
+          <div class="controls">
+            <label class="control">
+              <span>Timeframe</span>
+              <select id="chart-timeframe" onchange="ChartsPage.updateTimeframe(this.value)">
+                <option value="7">Last 7 Days</option>
+                <option value="30" selected>Last 30 Days</option>
+                <option value="90">Last 90 Days</option>
+                <option value="all">All Time</option>
+              </select>
+            </label>
+          </div>
+        </header>
+        
+        <div class="charts-grid">
+          <div class="chart-container">
+            <h3>Resting Heart Rate (bpm)</h3>
+            <canvas id="chart-rhr"></canvas>
+          </div>
+          <div class="chart-container">
+            <h3>Heart Rate Variability (ms)</h3>
+            <canvas id="chart-hrv"></canvas>
+          </div>
+          <div class="chart-container">
+            <h3>Daily Steps</h3>
+            <canvas id="chart-steps"></canvas>
+          </div>
+          <div class="chart-container">
+            <h3>Sleep Duration (hrs)</h3>
+            <canvas id="chart-sleep"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section id="labs" class="content-section card hidden">
       <header class="card-header">
         <div>
           <h1>Laboratory Results</h1>
@@ -287,6 +328,8 @@
   <script src="assets/js/meds.js"></script>
   <script src="assets/js/logs.js"></script>
   <script src="assets/js/providers.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="assets/js/charts.js"></script>
   <!-- Supabase Library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-config.js"></script>

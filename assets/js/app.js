@@ -1,7 +1,7 @@
 // Main App Controller
 const App = (() => {
   const switchSection = () => {
-    const hash = window.location.hash || "#labs";
+    const hash = window.location.hash || "#charts";
     const sectionId = hash.substring(1);
     console.log("Switching to section:", hash);
 
@@ -16,7 +16,9 @@ const App = (() => {
 
       // Initialize the page module if it exists
       try {
-        if (hash === "#meds" && typeof MedsPage !== "undefined") {
+        if (hash === "#charts" && typeof ChartsPage !== "undefined") {
+          ChartsPage.init();
+        } else if (hash === "#meds" && typeof MedsPage !== "undefined") {
           MedsPage.init();
         } else if (hash === "#labs" && typeof LabsPage !== "undefined") {
           LabsPage.load();
@@ -33,8 +35,8 @@ const App = (() => {
     document.querySelectorAll(".nav-link").forEach((link) => {
       const href = link.getAttribute("href");
       if (href) {
-        // Active if exact match or if hash is default and link is for labs
-        const isActive = href === hash || (hash === "#labs" && href === "#labs");
+        // Active if exact match or if hash is default and link is for charts
+        const isActive = href === hash || (hash === "#charts" && href === "#charts");
         link.classList.toggle("active", isActive);
       }
     });
