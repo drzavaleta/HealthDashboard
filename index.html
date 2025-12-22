@@ -102,6 +102,10 @@
         
         <div class="charts-grid">
           <div class="chart-container">
+            <h3>Blood Glucose (mg/dL)</h3>
+            <canvas id="chart-glucose"></canvas>
+          </div>
+          <div class="chart-container">
             <h3>Resting Heart Rate (bpm)</h3>
             <canvas id="chart-rhr"></canvas>
           </div>
@@ -117,15 +121,11 @@
             <h3>Sleep Duration (hrs)</h3>
             <canvas id="chart-sleep"></canvas>
           </div>
-      <div class="chart-container">
-        <h3>Respiratory Rate (br/min)</h3>
-        <canvas id="chart-resp"></canvas>
-      </div>
-      <div class="chart-container">
-        <h3>Blood Glucose (mg/dL)</h3>
-        <canvas id="chart-glucose"></canvas>
-      </div>
-    </div>
+          <div class="chart-container">
+            <h3>Respiratory Rate (br/min)</h3>
+            <canvas id="chart-resp"></canvas>
+          </div>
+        </div>
       </section>
 
       <section id="labs" class="content-section card hidden">
@@ -337,6 +337,7 @@
   <script src="assets/js/logs.js"></script>
   <script src="assets/js/providers.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
   <script src="assets/js/charts.js"></script>
   <!-- Supabase Library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
