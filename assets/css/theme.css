@@ -667,42 +667,6 @@ tbody tr:hover {
   display: none !important;
 }
 
-/* Charts Layout */
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-  gap: 24px;
-  margin-top: 24px;
-}
-
-.chart-container {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-  min-height: 350px;
-}
-
-.chart-container h3 {
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  color: var(--color-secondary);
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: 8px;
-}
-
-@media (max-width: 720px) {
-  .charts-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .chart-container {
-    min-height: 300px;
-    padding: 12px;
-  }
-}
-
 /* Medications Page Styles */
 .actions {
   text-align: center;
@@ -891,7 +855,14 @@ tbody tr:hover {
   border-radius: var(--radius);
   padding: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-  min-height: 350px;
+  height: 400px; /* Fixed height to prevent "impossible tall" charts */
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-container canvas {
+  flex: 1; /* Make canvas fill the remaining space in container */
+  min-height: 0; /* Important for flex children to shrink */
 }
 
 .chart-container h3 {
@@ -908,7 +879,7 @@ tbody tr:hover {
   }
   
   .chart-container {
-    min-height: 300px;
+    height: 300px; /* Shorter on mobile */
     padding: 12px;
   }
 }
