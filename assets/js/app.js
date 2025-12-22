@@ -41,8 +41,15 @@ const App = (() => {
   };
 
   const init = () => {
+    const hamburgerBtn = document.getElementById("hamburger-btn");
+    const navLinks = document.getElementById("nav-links");
+
     // Standard hash change listener
-    window.addEventListener("hashchange", switchSection);
+    window.addEventListener("hashchange", () => {
+      switchSection();
+      // Close mobile menu on navigation
+      navLinks?.classList.remove("show");
+    });
     
     // Manual click override for browsers with stale hash state
     document.getElementById("main-nav")?.addEventListener("click", (e) => {
@@ -50,6 +57,21 @@ const App = (() => {
       if (link && link.getAttribute("href")) {
         // Small delay to let the browser update window.location.hash
         setTimeout(switchSection, 0);
+        // Close mobile menu on navigation
+        navLinks?.classList.remove("show");
+      }
+    });
+
+    // Hamburger Toggle
+    hamburgerBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      navLinks?.classList.toggle("show");
+    });
+
+    // Close menu when clicking elsewhere
+    window.addEventListener("click", (e) => {
+      if (!e.target.closest("#main-nav")) {
+        navLinks?.classList.remove("show");
       }
     });
 
