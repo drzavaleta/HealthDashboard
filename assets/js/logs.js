@@ -136,6 +136,14 @@ const LogsPage = (() => {
       
       const colCount = dateColumns.length + (isAdding ? 1 : 0);
       
+      const dateInputHtml = (id, value) => `
+        <div class="date-input-wrapper">
+          <input type="text" value="${value || ""}" id="${id}" placeholder="YYYY-MM-DD" class="date-picker-header">
+          <button type="button" class="date-picker-trigger" onclick="this.nextElementSibling.showPicker()">📅</button>
+          <input type="date" class="hidden-date-picker" onchange="this.previousElementSibling.previousElementSibling.value = this.value">
+        </div>
+      `;
+
       table.innerHTML = `
         <colgroup>
           <col class="col-test" />
@@ -155,7 +163,7 @@ const LogsPage = (() => {
                 </div>
               </div>
             </th>
-            ${isAdding ? `<th class="th-date"><input type="date" id="new-col-date-${device}" class="date-picker-header"></th>` : ""}
+            ${isAdding ? `<th class="th-date">${dateInputHtml(`new-col-date-${device}`, "")}</th>` : ""}
             ${dateColumns.map((d) => {
               const isEditing = state.editingColumn?.device === device && state.editingColumn?.date === d;
               return `

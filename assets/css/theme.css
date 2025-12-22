@@ -394,9 +394,9 @@ p {
   border-right: 1px solid var(--color-border);
   width: var(--col-test);
   min-width: var(--col-test);
-  max-width: var(--col-test);
+  /* Removed max-width to allow expansion if needed, but keeping fixed for layout */
   white-space: nowrap;
-  overflow: visible; /* Important for tooltips */
+  overflow: visible; 
 }
 
 /* Specific styling for name text to handle ellipsis */
@@ -428,6 +428,7 @@ td {
   border-bottom: 1px solid var(--color-border);
   text-align: left;
   font-size: 14px;
+  vertical-align: middle; /* Ensure all content is centered vertically */
 }
 
 .panel-header-row {
@@ -441,13 +442,17 @@ td {
 }
 
 .th-panel {
-  text-align: left;
+  text-align: left !important; /* Explicitly force left alignment */
   font-size: 16px;
   font-weight: 700;
   color: var(--color-secondary);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  padding-left: 16px; /* Give it some breathing room from the edge */
+}
+
+/* Ensure only the actual first column of data has the fixed width, not the header panel */
+.lab-table thead tr:not(.panel-header-row) th:first-child,
+.lab-table tbody td:first-child {
   width: var(--col-test);
   min-width: var(--col-test);
   max-width: var(--col-test);
@@ -664,9 +669,15 @@ tbody tr:hover {
 
 /* Medications Page Styles */
 .actions {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
+  text-align: center;
+  vertical-align: middle !important;
+  white-space: nowrap;
+}
+
+.actions .btn-icon {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 4px;
 }
 
 .btn {
@@ -739,7 +750,7 @@ tbody tr:hover {
 
 .add-row input,
 .editing-row input {
-  display: block; /* Force one per line */
+  display: block;
   width: 100%;
   margin-bottom: 4px;
   padding: 8px 10px;
@@ -776,19 +787,6 @@ tbody tr:hover {
 
 .nav-link:not(.active):not(.disabled):hover {
   background: rgba(0, 0, 0, 0.03);
-}
-
-.data-controls {
-  margin-top: 40px;
-  padding-top: 20px;
-  border-top: 1px solid var(--color-border);
-  text-align: center;
-}
-
-.btn-muted {
-  background: #eee;
-  color: var(--color-muted);
-  border: 1px solid #ccc;
 }
 
 .btn-link {
@@ -851,19 +849,21 @@ tbody tr:hover {
 
 #medications-table, #supplements-table, #discontinued-table {
   table-layout: fixed;
-  width: 100%;
-  --col-test: 520px; /* Double the default 260px */
+  width: max-content;
+  min-width: 100%;
+  --col-test: 260px;
 }
 
 @media (max-width: 720px) {
   #medications-table, #supplements-table, #discontinued-table {
-    --col-test: 360px; /* Double the default 180px */
+    --col-test: 180px;
   }
 }
 
 #providers-table {
   table-layout: fixed;
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
 }
 
 /* Allow other columns to breathe and center them */
@@ -895,7 +895,40 @@ tbody tr:hover {
   text-align: center;
 }
 
-.notes-cell {
-  font-style: italic;
-  color: var(--color-muted);
+/* Date Input Enhancements */
+.date-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.date-input-wrapper input[type="text"] {
+  padding-right: 36px;
+}
+
+.date-picker-trigger {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  font-size: 16px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.date-picker-trigger:hover {
+  opacity: 1;
+}
+
+.hidden-date-picker {
+  position: absolute;
+  right: 0;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  padding: 0;
+  border: none;
+  pointer-events: none;
 }

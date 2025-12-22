@@ -136,7 +136,13 @@
                   <td><input type="text" placeholder="Add name..." id="new-med-name"></td>
                   <td><input type="text" placeholder="Dose..." id="new-med-dose"></td>
                   <td><input type="text" placeholder="Freq..." id="new-med-freq"></td>
-                  <td><input type="date" id="new-med-date"></td>
+                  <td>
+                    <div class="date-input-wrapper">
+                      <input type="text" placeholder="YYYY-MM-DD" id="new-med-date">
+                      <button type="button" class="date-picker-trigger" onclick="this.nextElementSibling.showPicker()">📅</button>
+                      <input type="date" class="hidden-date-picker" onchange="this.previousElementSibling.previousElementSibling.value = this.value">
+                    </div>
+                  </td>
                   <td><button class="btn btn-add" onclick="MedsPage.addItem('medications')">Add</button></td>
                 </tr>
               </tfoot>
@@ -169,7 +175,13 @@
                   </td>
                   <td><input type="text" placeholder="Dose..." id="new-supp-dose"></td>
                   <td><input type="text" placeholder="Freq..." id="new-supp-freq"></td>
-                  <td><input type="date" id="new-supp-date"></td>
+                  <td>
+                    <div class="date-input-wrapper">
+                      <input type="text" placeholder="YYYY-MM-DD" id="new-supp-date">
+                      <button type="button" class="date-picker-trigger" onclick="this.nextElementSibling.showPicker()">📅</button>
+                      <input type="date" class="hidden-date-picker" onchange="this.previousElementSibling.previousElementSibling.value = this.value">
+                    </div>
+                  </td>
                   <td><button class="btn btn-add" onclick="MedsPage.addItem('supplements')">Add</button></td>
                 </tr>
               </tfoot>
@@ -208,10 +220,6 @@
         </div>
       </div>
       
-      <div class="data-controls">
-        <button class="btn btn-muted" onclick="MedsPage.resetData()">Reset to CSV Defaults</button>
-        <p class="muted-small">Use this if your tables are not syncing with the latest data files.</p>
-      </div>
     </section>
 
     <section id="logs" class="content-section card hidden">
@@ -271,10 +279,6 @@
         </div>
       </div>
       
-      <div class="data-controls">
-        <button class="btn btn-muted" onclick="ProvidersPage.resetData()">Reset to CSV Defaults</button>
-        <p class="muted-small">Use this if your tables are not syncing with the latest data files.</p>
-      </div>
     </section>
     </div> <!-- Close dashboard-content -->
   </main>

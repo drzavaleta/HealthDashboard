@@ -37,6 +37,13 @@ const MedsPage = (() => {
     state[key].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 
     const editingIndex = state.editing[key];
+    const dateInputHtml = (id, value) => `
+      <div class="date-input-wrapper">
+        <input type="text" value="${value || ""}" id="${id}" placeholder="YYYY-MM-DD" class="date-text-input">
+        <button type="button" class="date-picker-trigger" onclick="this.nextElementSibling.showPicker()">📅</button>
+        <input type="date" class="hidden-date-picker" onchange="this.previousElementSibling.previousElementSibling.value = this.value">
+      </div>
+    `;
 
     state[key].forEach((item, index) => {
       const tr = document.createElement("tr");
@@ -49,7 +56,7 @@ const MedsPage = (() => {
         
         const fourthColInput = key === "discontinued"
           ? `<input type="text" value="${item.notes || ""}" id="edit-${key}-notes" placeholder="Notes">`
-          : `<input type="date" value="${item.start_date || ""}" id="edit-${key}-date">`;
+          : dateInputHtml(`edit-${key}-date`, item.start_date);
 
         tr.innerHTML = `
           <td>
