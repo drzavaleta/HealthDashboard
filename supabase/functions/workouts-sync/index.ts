@@ -106,6 +106,9 @@ function normalizeActivityType(name: string): string {
   if (normalized.includes('stair')) {
     return 'Stair Climbing';
   }
+  if (normalized.includes('sauna')) {
+    return 'Sauna';
+  }
   
   // Return original with title case if no match
   return name.charAt(0).toUpperCase() + name.slice(1);

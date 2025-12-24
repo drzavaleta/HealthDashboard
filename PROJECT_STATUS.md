@@ -27,9 +27,10 @@ A secure, responsive Single Page Application (SPA) for tracking personal health 
 - `assets/css/theme.css`: Healthcare-focused theme, responsive layouts, and table styling.
 - `assets/js/`:
   - `supabase-config.js`: Initializes the Supabase client.
-  - `auth.js`: Manages login/signup toggles and session states.
+  - `auth.js`: Manages login/signup, session states, and user profile with HR zone settings.
   - `app.js`: Main router (hash-based navigation).
   - `charts.js`: Visualizes automated health metrics with custom crosshair plugin.
+  - `exercise.js`: Exercise tab with Weekly Activity and Heart Rate Zone Activity charts.
   - `labs.js`: Handles laboratory result rendering and filtering.
   - `meds.js`: CRUD for Medications, Supplements, and Discontinued items.
   - `logs.js`: CRUD for manual device logs (Apple Watch, Whoop, etc.).
@@ -196,7 +197,9 @@ GROUP BY user_id, metric_type, source, date_trunc('day', recorded_at);
 Stores raw JSON payloads for 48 hours. Useful for debugging new metrics.
 
 ### Other Tables
-- `workouts`: `activity_type`, `duration_min`, `calories_burned`, `source`, `start_time`, `end_time`.
+- `profiles`: `full_name`, `gender`, `date_of_birth`, `zone0_max`, `zone1_max`, `zone2_max`, `zone3_max`, `zone4_max`
+- `workouts`: `activity_type`, `duration_min`, `calories_burned`, `source`, `start_time`, `end_time`, `workout_date`
+- `workout_heart_rate`: `workout_id`, `recorded_at`, `avg_hr`, `min_hr`, `max_hr`
 - `medications`: `name`, `dose`, `frequency`, `start_date`
 - `supplements`: `name`, `dose`, `frequency`, `start_date`, `url`
 - `discontinued_meds`: `name`, `dose`, `frequency`, `notes`
@@ -313,7 +316,8 @@ GROUP BY hr_zone;
 
 ## 📝 Roadmap / Pending Tasks
 - [x] **Workout Data Integration:** ✅ Completed Dec 24, 2025
-- [ ] **Workout Charts:** Build activity duration and HR zone charts on the Charts page.
+- [x] **Exercise Tab Charts:** ✅ Completed Dec 24, 2025 - Weekly Activity and HR Zone Activity charts
+- [x] **User Profile with HR Zones:** ✅ Completed Dec 24, 2025 - Customizable HR zone thresholds
 - [ ] **Edge Function Refinement:** Limit incoming payload size and filter for only necessary metrics.
 - [ ] **Documents Section:** Secure storage for PDF lab reports.
 - [ ] **AI PDF Scraper:** Automated data entry from PDF lab reports.
@@ -324,6 +328,94 @@ GROUP BY hr_zone;
 ---
 
 ## 🛠 Recent Changes (Dec 24, 2025)
+
+### Exercise Tab - NEW
+
+Located at `assets/js/exercise.js`
+
+Two charts with shared week navigation (Sun-Sat):
+
+#### 1. Weekly Activity Chart
+- **X-axis:** 7 days (Sun-Sat) with date labels
+- **Y-axis:** Minutes per activity
+- **Grouped bars:** Multiple activities on same day shown side-by-side
+- **Legend:** Shows all activity types with colors
+- **Total:** Sum of all workout minutes (excludes Sauna)
+
+#### 2. Heart Rate Zone Activity Chart
+- **X-axis:** Zones 1-5 (Zone 0 tracked but not displayed)
+- **Y-axis:** Minutes in each zone
+- **Data source:** `workout_heart_rate` table (per-minute HR data)
+- **Thresholds:** Customizable per user via profile settings
+
+#### Activity Colors
+```javascript
+Walking: Green, Running: Red, Cycling: Blue, Swimming: Cyan,
+Golf: Light Green, Yoga: Purple, Strength Training: Deep Orange,
+HIIT: Orange, Elliptical: Brown, Rowing: Indigo, Sauna: Warm Orange
+```
+
+---
+
+### User Profile System - NEW
+
+#### Database: `profiles` table
+```sql
+id UUID PRIMARY KEY REFERENCES auth.users(id),
+full_name TEXT,
+gender TEXT CHECK (gender IN ('male', 'female', 'other')),
+date_of_birth DATE,
+zone0_max INTEGER DEFAULT 90,  -- 50% of max HR
+zone1_max INTEGER DEFAULT 108, -- 60% of max HR
+zone2_max INTEGER DEFAULT 126, -- 70% of max HR
+zone3_max INTEGER DEFAULT 144, -- 80% of max HR
+zone4_max INTEGER DEFAULT 162  -- 90% of max HR
+```
+
+#### Profile Form (in header dropdown)
+- Full Name → Displays initials in profile button (e.g., "JD")
+- Gender → Used for max HR calculation
+- Date of Birth → Used for age-based max HR calculation
+- HR Zone thresholds (Zone 0-4 max values)
+- **"Calculate Suggested Values"** button auto-populates zones
+
+#### Max HR Calculation
+```
+Men:   Max HR = 214 - (0.8 × age)
+Women: Max HR = 209 - (0.9 × age)
+Default (if missing data): 220
+```
+
+#### Zone Thresholds (% of Max HR)
+| Zone | % of Max | Purpose |
+|------|----------|---------|
+| Zone 0 | ≤50% | Below active (not displayed) |
+| Zone 1 | 50-60% | Warm-up / Recovery |
+| Zone 2 | 60-70% | Light Aerobic |
+| Zone 3 | 70-80% | Aerobic |
+| Zone 4 | 80-90% | Threshold |
+| Zone 5 | 90%+ | Max Effort |
+
+#### API Methods
+- `Auth.getProfile()` - Returns current user profile
+- `Auth.getAge()` - Calculates age from DOB
+- `Auth.getHRZones()` - Returns array of zone objects with min/max/display
+
+#### Auto-Refresh
+When profile is saved, dispatches `profileUpdated` event. Exercise page listens and refreshes zones chart automatically if visible.
+
+---
+
+### Workouts Edge Function Update
+
+Added Sauna activity type normalization:
+```typescript
+if (normalized.includes('sauna')) {
+  return 'Sauna';
+}
+```
+
+---
 
 ### Daily Steps - Dedicated Edge Function (SOLVED)
 

@@ -23,12 +23,12 @@
       </button>
 
       <div class="nav-links" id="nav-links">
-        <a class="nav-link" href="#charts">Charts</a>
+        <a class="nav-link" href="#charts">Trends</a>
+        <a class="nav-link" href="#exercise">Exercise</a>
         <a class="nav-link" href="#labs">Laboratory</a>
         <a class="nav-link" href="#meds">Medications</a>
         <a class="nav-link" href="#logs">Daily Logs</a>
         <a class="nav-link" href="#providers">Providers</a>
-        <span class="nav-link disabled" aria-disabled="true">Exercise</span>
         <span class="nav-link disabled" aria-disabled="true">Documents</span>
       </div>
       
@@ -39,6 +39,53 @@
         <div class="dropdown-menu" id="dropdown-menu">
           <div class="dropdown-header">
             <span id="user-email" class="muted-small">user@example.com</span>
+          </div>
+          <hr>
+          <div class="profile-form" id="profile-form">
+            <div class="profile-field">
+              <label for="profile-name">Full Name</label>
+              <input type="text" id="profile-name" placeholder="John Doe">
+            </div>
+            <div class="profile-field">
+              <label for="profile-gender">Gender</label>
+              <select id="profile-gender">
+                <option value="">Select...</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="profile-field">
+              <label for="profile-dob">Date of Birth</label>
+              <input type="date" id="profile-dob">
+            </div>
+            <div class="profile-section-label">Heart Rate Zones (Max BPM)</div>
+            <button type="button" class="btn-suggest-zones" id="suggest-zones-btn">Calculate Suggested Values</button>
+            <div class="hr-zones-grid">
+              <div class="zone-field zone-field-hidden">
+                <label for="profile-zone0">Zone 0</label>
+                <input type="number" id="profile-zone0" value="90" min="50" max="250">
+              </div>
+              <div class="zone-field">
+                <label for="profile-zone1">Zone 1</label>
+                <input type="number" id="profile-zone1" value="108" min="50" max="250">
+              </div>
+              <div class="zone-field">
+                <label for="profile-zone2">Zone 2</label>
+                <input type="number" id="profile-zone2" value="126" min="50" max="250">
+              </div>
+              <div class="zone-field">
+                <label for="profile-zone3">Zone 3</label>
+                <input type="number" id="profile-zone3" value="144" min="50" max="250">
+              </div>
+              <div class="zone-field">
+                <label for="profile-zone4">Zone 4</label>
+                <input type="number" id="profile-zone4" value="162" min="50" max="250">
+              </div>
+            </div>
+            <div class="zone-hint">Zone 5 = above Zone 4 max</div>
+            <button class="btn-save-profile" id="save-profile-btn">Save Profile</button>
+            <div id="profile-save-status" class="profile-status"></div>
           </div>
           <hr>
           <button class="dropdown-item" onclick="Auth.signOut()">Logout</button>
@@ -124,6 +171,44 @@
           <div class="chart-container">
             <h3>Respiratory Rate (br/min)</h3>
             <canvas id="chart-resp"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Exercise Section -->
+      <section id="exercise" class="content-section card hidden">
+        <header class="card-header">
+          <div>
+            <h1>Exercise</h1>
+            <p class="muted">Workout activity and heart rate zones.</p>
+          </div>
+          <div class="controls">
+            <div class="week-nav">
+              <button class="nav-btn" onclick="ExercisePage.navigate(-1)">‹</button>
+              <div class="week-info">
+                <span id="exercise-week-label" class="week-label">Week 1</span>
+                <span id="exercise-date-range" class="total-label">Dec 22 – Dec 28</span>
+              </div>
+              <button class="nav-btn" onclick="ExercisePage.navigate(1)">›</button>
+            </div>
+          </div>
+        </header>
+        
+        <div class="charts-grid">
+          <div class="chart-container chart-container-wide">
+            <div class="chart-title-row">
+              <h3>Weekly Activity</h3>
+              <span id="activity-total-label" class="chart-total">0 min</span>
+            </div>
+            <canvas id="chart-activity"></canvas>
+          </div>
+
+          <div class="chart-container chart-container-wide">
+            <div class="chart-title-row">
+              <h3>Heart Rate Zone Activity</h3>
+              <span id="zones-total-label" class="chart-total">0 min</span>
+            </div>
+            <canvas id="chart-zones"></canvas>
           </div>
         </div>
       </section>
@@ -332,16 +417,23 @@
     </div> <!-- Close dashboard-content -->
   </main>
 
+  <!-- Supabase Library (must load first) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-config.js"></script>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+  
+  <!-- Page Scripts (require Supabase) -->
   <script src="assets/js/labs.js"></script>
   <script src="assets/js/meds.js"></script>
   <script src="assets/js/logs.js"></script>
   <script src="assets/js/providers.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
   <script src="assets/js/charts.js"></script>
-  <!-- Supabase Library -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/supabase-config.js"></script>
+  <script src="assets/js/exercise.js"></script>
+  
+  <!-- Auth & Router (last) -->
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/app.js"></script>
 </body>

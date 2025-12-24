@@ -18,6 +18,8 @@ const App = (() => {
       try {
         if (hash === "#charts" && typeof ChartsPage !== "undefined") {
           ChartsPage.init();
+        } else if (hash === "#exercise" && typeof ExercisePage !== "undefined") {
+          ExercisePage.init();
         } else if (hash === "#meds" && typeof MedsPage !== "undefined") {
           MedsPage.init();
         } else if (hash === "#labs" && typeof LabsPage !== "undefined") {

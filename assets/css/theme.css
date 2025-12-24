@@ -235,7 +235,7 @@ a {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-small);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  min-width: 180px;
+  min-width: 220px;
   display: none;
   z-index: 100;
   padding: 8px 0;
@@ -265,6 +265,155 @@ a {
 
 .dropdown-item:hover {
   background: rgba(15, 124, 144, 0.05);
+  color: var(--color-primary);
+}
+
+/* Profile Form in Dropdown */
+.profile-form {
+  padding: 12px 16px;
+}
+
+.profile-field {
+  margin-bottom: 12px;
+}
+
+.profile-field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.profile-field input,
+.profile-field select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.profile-field input:focus,
+.profile-field select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(15, 124, 144, 0.1);
+}
+
+.btn-save-profile {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-small);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-save-profile:hover {
+  filter: brightness(1.1);
+}
+
+.profile-status {
+  font-size: 12px;
+  text-align: center;
+  margin-top: 8px;
+  min-height: 16px;
+}
+
+.profile-status.saving {
+  color: var(--color-muted);
+}
+
+.profile-status.success {
+  color: var(--color-normal);
+}
+
+.profile-status.error {
+  color: var(--color-high);
+}
+
+.profile-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 16px 0 8px 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.hr-zones-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.zone-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.zone-field label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.zone-field input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  font-size: 13px;
+  text-align: center;
+  background: var(--color-surface);
+}
+
+.zone-field input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.zone-hint {
+  font-size: 10px;
+  color: var(--color-muted);
+  text-align: center;
+  margin: 6px 0 12px 0;
+  font-style: italic;
+}
+
+.zone-field-hidden {
+  display: none;
+}
+
+.btn-suggest-zones {
+  width: 100%;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+  background: var(--color-bg);
+  color: var(--color-secondary);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-small);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-suggest-zones:hover {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
   color: var(--color-primary);
 }
 
@@ -877,6 +1026,172 @@ tbody tr:hover {
   padding-bottom: 8px;
 }
 
+/* Chart Navigation Header (Exercise page) */
+.chart-nav-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chart-nav-header h3 {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.chart-nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-nav-controls .nav-btn {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-secondary);
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.chart-nav-controls .nav-btn:hover {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.chart-nav-controls .date-label {
+  font-weight: 600;
+  color: var(--color-text);
+  min-width: 140px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* View Toggle (Radio Buttons) */
+.view-toggle {
+  display: flex;
+  gap: 12px;
+  padding-right: 16px;
+  border-right: 1px solid var(--color-border);
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--color-muted);
+  transition: color 0.2s ease;
+}
+
+.radio-label:has(input:checked) {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.radio-label input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.radio-label input[type="radio"]:checked {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+}
+
+.radio-label input[type="radio"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: white;
+}
+
+/* Date Navigation */
+.date-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Week Navigation */
+.week-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.week-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+}
+
+.week-label {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-secondary);
+}
+
+.total-label {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin-top: 2px;
+}
+
+/* Wide chart container for weekly view */
+.chart-container-wide {
+  grid-column: 1 / -1;
+  height: 450px;
+}
+
+/* Chart title row with inline total */
+.chart-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.chart-title-row h3 {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.chart-total {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: rgba(15, 124, 144, 0.08);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
 @media (max-width: 720px) {
   .charts-grid {
     grid-template-columns: 1fr;
@@ -891,6 +1206,35 @@ tbody tr:hover {
 
   .card {
     padding: 16px; /* Slightly less padding on mobile */
+  }
+
+  .chart-nav-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .chart-nav-controls {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .view-toggle {
+    border-right: none;
+    padding-right: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--color-border);
+    width: 100%;
+    justify-content: center;
+  }
+
+  .date-nav {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .chart-nav-controls .date-label {
+    min-width: 180px;
   }
 }
 
