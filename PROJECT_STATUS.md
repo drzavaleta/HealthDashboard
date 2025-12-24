@@ -35,7 +35,9 @@ A secure, responsive Single Page Application (SPA) for tracking personal health 
   - `logs.js`: CRUD for manual device logs (Apple Watch, Whoop, etc.).
   - `providers.js`: CRUD for healthcare provider contact list.
 - `supabase/functions/`:
-  - `health-sync/index.ts`: Main edge function for processing Health Auto Export data.
+  - `health-sync/index.ts`: Main edge function for processing Health Auto Export data (all metrics except steps).
+  - `steps-daily/index.ts`: Dedicated edge function for daily step counts (hourly aggregation).
+  - `workouts-sync/index.ts`: Edge function for workout data from Apple Watch.
   - `capture-payload/index.ts`: Debug function to capture raw payloads for analysis.
 
 ---
@@ -43,7 +45,8 @@ A secure, responsive Single Page Application (SPA) for tracking personal health 
 ## ✨ Key Features & Design Decisions
 
 ### 1. Health Automation Pipeline
-- **iOS Integration:** Uses the **Health Auto Export** app on iPhone to send Apple Health data (Whoop, Eight Sleep, Apple Watch, Lingo) directly to Supabase.
+- **iOS Integration:** Uses the **[Health Auto Export](https://apps.apple.com/app/id1115567069)** app on iPhone to send Apple Health data (Whoop, Eight Sleep, Apple Watch, Lingo) directly to Supabase.
+- **API Documentation:** [Health Auto Export JSON Format](https://github.com/Lybron/health-auto-export/wiki/API-Export---JSON-Format)
 - **3-Tier Storage Engine:**
   - **Tier 1 (Audit):** `raw_health_exports` table stores the full incoming JSON for 48 hours (auto-purged).
   - **Tier 2 (Source of Truth):** `health_samples` table stores high-resolution individual data points with deduplication.
@@ -100,6 +103,13 @@ The `createChart()` function supports these `yAxisOptions`:
 ## 🔄 Edge Function: health-sync
 
 Located at `supabase/functions/health-sync/index.ts`
+
+### Deployment Command
+```bash
+npx supabase functions deploy health-sync --no-verify-jwt
+```
+
+**Important:** The `--no-verify-jwt` flag is required because Auto Exporter is an external app that doesn't have a Supabase JWT token. Without this flag, calls will fail with "Missing authorization header".
 
 ### Source Normalization Rules
 The edge function normalizes device source names to clean categories:
@@ -234,8 +244,76 @@ LIMIT 10;
 
 ---
 
+## 🏋️ Workout Data Integration (NEW - Dec 24, 2025)
+
+### Edge Function: workouts-sync
+Located at `supabase/functions/workouts-sync/index.ts`
+
+```bash
+npx supabase functions deploy workouts-sync --no-verify-jwt
+```
+
+**Endpoint:** `https://guqvwcshdckttqubyofe.supabase.co/functions/v1/workouts-sync`
+
+### Auto Exporter Configuration (Workouts)
+- **Data Type:** Workouts
+- **Aggregation:** None (individual workouts)
+- **Sources:** All
+
+### Data Stored
+
+**`workouts` table (one row per workout):**
+- `id` - UUID from Apple Health (for deduplication)
+- `activity_type` - Normalized type (Walking, Running, Golf, etc.)
+- `activity_raw` - Original name from Apple Health
+- `duration_min` - Duration in minutes
+- `calories_burned` - Active calories
+- `distance_mi` - Distance in miles
+- `avg_heart_rate` / `max_heart_rate` - HR stats
+- `workout_date` - Date for day/week grouping
+- `start_time` / `end_time` - Timestamps
+- `location` - Indoor/Outdoor
+- `temperature_f` / `humidity_pct` - Environmental conditions
+
+**`workout_heart_rate` table (one row per minute of workout):**
+- `workout_id` - Links to workouts table
+- `recorded_at` - Timestamp
+- `avg_hr` / `min_hr` / `max_hr` - Heart rate for that minute
+
+### Planned Charts
+1. **Activity Duration:** X-axis = activity type, Y-axis = total minutes. Toggle by day/week.
+2. **Heart Rate Zones:** X-axis = zones (1-5), Y-axis = total minutes. Toggle by day/week.
+
+### Sample Queries
+
+```sql
+-- Daily totals by activity type
+SELECT workout_date, activity_type, SUM(duration_min) as total_minutes
+FROM workouts
+GROUP BY workout_date, activity_type
+ORDER BY workout_date DESC;
+
+-- Heart rate zone analysis (define your own thresholds)
+SELECT 
+  CASE 
+    WHEN avg_hr < 100 THEN 'Zone 1'
+    WHEN avg_hr < 120 THEN 'Zone 2'
+    WHEN avg_hr < 140 THEN 'Zone 3'
+    WHEN avg_hr < 160 THEN 'Zone 4'
+    ELSE 'Zone 5'
+  END as hr_zone,
+  COUNT(*) as minutes
+FROM workout_heart_rate whr
+JOIN workouts w ON whr.workout_id = w.id
+WHERE w.workout_date = '2025-12-23'
+GROUP BY hr_zone;
+```
+
+---
+
 ## 📝 Roadmap / Pending Tasks
-- [ ] **Workout Data Integration:** Enable "Workouts" in Auto Exporter (not Apple Exercise Time) to capture structured workout sessions with activity type, duration, and heart rate stats.
+- [x] **Workout Data Integration:** ✅ Completed Dec 24, 2025
+- [ ] **Workout Charts:** Build activity duration and HR zone charts on the Charts page.
 - [ ] **Edge Function Refinement:** Limit incoming payload size and filter for only necessary metrics.
 - [ ] **Documents Section:** Secure storage for PDF lab reports.
 - [ ] **AI PDF Scraper:** Automated data entry from PDF lab reports.
@@ -245,7 +323,50 @@ LIMIT 10;
 
 ---
 
-## 🛠 Recent Changes (Dec 22, 2025)
+## 🛠 Recent Changes (Dec 24, 2025)
+
+### Daily Steps - Dedicated Edge Function (SOLVED)
+
+Step count data required a completely separate approach due to Auto Exporter's per-second granularity causing massive overcounting.
+
+**Problem:** The main `health-sync` function received ~80,000 step samples per day at per-second granularity with fractional values. Even with deduplication, summing these produced counts 30-100% higher than Apple Watch showed.
+
+**Solution:** Created dedicated `steps-daily` edge function with separate Auto Exporter automation.
+
+#### Auto Exporter Configuration (Steps)
+- **Automation Name:** Daily Steps
+- **Endpoint:** `https://guqvwcshdckttqubyofe.supabase.co/functions/v1/steps-daily`
+- **Data Type:** Step Count
+- **Aggregation:** **Hour** (not Day, not None)
+- **Sources:** **All** (critical! selecting only Apple Watch omits hours)
+
+#### Edge Function: steps-daily
+Located at `supabase/functions/steps-daily/index.ts`
+
+```bash
+npx supabase functions deploy steps-daily --no-verify-jwt
+```
+
+**How it works:**
+1. Receives hourly step aggregates from Auto Exporter (24 records per day)
+2. Extracts local date directly from timestamp string (e.g., "2025-12-23 06:00:00 -0600" → "2025-12-23")
+3. Sums all hours belonging to the same local date
+4. Stores one record per day in `health_samples`
+5. Uses upsert to update if re-synced
+
+**Why "All Sources" is required:**
+When only "Apple Watch" is selected, Auto Exporter skips hours where Apple Watch wasn't the primary contributor. Selecting "All" sources gets complete hourly data that Apple Health has already deduplicated.
+
+**Result:** Step counts now match Apple Watch exactly (e.g., 15,792 vs 15,792 ✓)
+
+---
+
+### Edge Function V6 - Minute Aggregation (Deprecated for Steps)
+The main `health-sync` function was updated to aggregate step data to minute-level buckets, but this still produced inaccurate counts. The dedicated `steps-daily` function with hourly Auto Exporter aggregation is the correct solution.
+
+---
+
+## 🛠 Previous Changes (Dec 22, 2025)
 
 ### Charts Improvements
 - Blood Glucose chart moved to first position

@@ -283,6 +283,8 @@ const ChartsPage = (() => {
 
     const datasets = Array.from(sources).map(source => {
       const color = getSourceColor(source);
+      // Use more solid colors for bar charts (0.7 opacity instead of 0.1)
+      const barBgColor = color.border.replace(')', ', 0.7)').replace('rgb', 'rgba');
       return {
         label: source,
         data: dates.map(d => {
@@ -294,7 +296,7 @@ const ChartsPage = (() => {
           return val ?? null;
         }),
         borderColor: color.border,
-        backgroundColor: color.bg,
+        backgroundColor: type === 'bar' ? barBgColor : color.bg,
         tension: 0.3,
         fill: type === 'area',
         pointRadius: yAxisOptions.hidePoints ? 0 : 4,
@@ -347,6 +349,12 @@ const ChartsPage = (() => {
                   return new Date(d).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
                 }
                 return window.formatDateForDisplay(d);
+              },
+              label: (context) => {
+                const value = context.parsed.y;
+                // Round to integer if it's a whole number metric (steps, etc.)
+                const displayValue = yAxisOptions.roundValues ? Math.round(value).toLocaleString() : value;
+                return `${context.dataset.label}: ${displayValue}`;
               }
             }
           },
@@ -359,7 +367,10 @@ const ChartsPage = (() => {
             beginAtZero: yAxisOptions.min === 0, 
             min: yAxisOptions.min,
             max: yAxisOptions.max,
-            grid: { color: 'rgba(0,0,0,0.05)' } 
+            grid: { color: 'rgba(0,0,0,0.05)' },
+            ticks: yAxisOptions.roundValues ? {
+              callback: (value) => Math.round(value).toLocaleString()
+            } : {}
           },
           x: { grid: { display: false } }
         }
@@ -493,7 +504,7 @@ const ChartsPage = (() => {
     createChart('chart-hrv', 'HRV', groupDataByDateAndSource(filteredMetrics, 'heart_rate_variability'), 'line', { min: 0, max: 100 });
 
     // 3. Steps
-    createChart('chart-steps', 'Steps', groupDataByDateAndSource(filteredMetrics, 'step_count'), 'bar', { min: 0 });
+    createChart('chart-steps', 'Steps', groupDataByDateAndSource(filteredMetrics, 'step_count'), 'bar', { min: 0, referenceLines: [10000], roundValues: true });
 
     // 4. Sleep (Sum of asleep + deep + rem + core)
     const sleepFilter = (d) => d.metric_type.startsWith('sleep_') && !d.metric_type.includes('in_bed') && !d.metric_type.includes('awake');
